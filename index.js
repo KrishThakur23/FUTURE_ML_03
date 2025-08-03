@@ -3,7 +3,18 @@ const dialogflow = require('@google-cloud/dialogflow');
 const uuid = require('uuid');
 require('dotenv').config();
 
+const TelegramBot = require('node-telegram-bot-api');
+const dialogflow = require('@google-cloud/dialogflow');
+const uuid = require('uuid');
+const fs = require('fs');
+
+// Write Dialogflow creds from secret to file
+fs.writeFileSync('credentials.json', process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+
+process.env.GOOGLE_APPLICATION_CREDENTIALS = './credentials.json';
+
 const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, { polling: true });
+
 
 const sessionClient = new dialogflow.SessionsClient({
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
