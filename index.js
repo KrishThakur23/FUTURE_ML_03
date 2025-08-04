@@ -1,6 +1,3 @@
-const TelegramBot = require('node-telegram-bot-api');
-const dialogflow = require('@google-cloud/dialogflow');
-const uuid = require('uuid');
 require('dotenv').config();
 
 const TelegramBot = require('node-telegram-bot-api');
@@ -9,7 +6,13 @@ const uuid = require('uuid');
 const fs = require('fs');
 
 // Write Dialogflow creds from secret to file
-fs.writeFileSync('credentials.json', process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON) {
+  fs.writeFileSync('credentials.json', process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+  process.env.GOOGLE_APPLICATION_CREDENTIALS = './credentials.json';
+} else {
+  console.error("❌ GOOGLE_APPLICATION_CREDENTIALS_JSON not found in environment.");
+  process.exit(1);
+}
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = './credentials.json';
 
@@ -17,12 +20,13 @@ const bot = new TelegramBot(process.env.TELEGRAM_TOKEN, { polling: true });
 
 
 const sessionClient = new dialogflow.SessionsClient({
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  keyFilename: 'credentials.json',
 });
 
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id;
   const userMessage = msg.text;
+  if (!userMessage) return;
 
   const sessionId = uuid.v4();
   const sessionPath = sessionClient.projectAgentSessionPath(
